@@ -4,11 +4,14 @@
 // ============================================================
 
 const GOOGLE_SCRIPT_URL =
-    "https://script.google.com/macros/s/AKfycbw5nqfrdU7Oe8n-pdhW9uUnfG3k9nPq-pVSbJBN7VQHeURqoOEpf4ebzCg-MW61pJCl/exec";
+"https://script.google.com/macros/s/AKfycbw5nqfrdU7Oe8n-pdhW9uUnfG3k9nPq-pVSbJBN7VQHeURqoOEpf4ebzCg-MW61pJCl/exec";
 
 const form = document.getElementById("leadForm");
 
-// Store customer details BEFORE form.reset()
+// ============================================================
+// CUSTOMER DETAILS
+// ============================================================
+
 let customerMobile = "";
 let customerName = "";
 let customerVehicle = "";
@@ -17,7 +20,7 @@ let customerDealership = "";
 
 
 // ============================================================
-// FIND ELEMENT SAFELY
+// SAFE ELEMENT FINDER
 // ============================================================
 
 function getElement(id) {
@@ -26,14 +29,82 @@ function getElement(id) {
 
 
 // ============================================================
-// SUBMIT FORM
+// PRIZES
+// ============================================================
+
+const prizes = [
+    "FREE Tyre Fitting",
+    "FREE Tubeless Valve Worth ₹100",
+    "2% OFF Final Bill",
+    "50% OFF Tube MRP",
+    "50% OFF Puncture Kit MRP",
+    "₹100 OFF Two Wheeler Tyres",
+    "₹100 OFF Car Tyres",
+    "₹1000 OFF Super Bike Tyres"
+];
+
+
+// ============================================================
+// SHOW COUPON RESULT
+// ============================================================
+
+function showCouponResult(coupon, prize) {
+
+    const couponElement = getElement("couponCode");
+    const prizeElement = getElement("prizeWon");
+
+    if (couponElement) {
+        couponElement.innerText = coupon;
+    }
+
+    if (prizeElement) {
+        prizeElement.innerText = prize;
+    }
+
+    const claimPage = getElement("claimPage");
+    const resultPage = getElement("resultPage");
+
+    if (claimPage) {
+        claimPage.style.display = "none";
+    }
+
+    if (resultPage) {
+        resultPage.style.display = "block";
+        resultPage.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    }
+
+    // Make sure WhatsApp button works
+    const whatsappButton = getElement("whatsappButton");
+
+    if (whatsappButton) {
+
+        whatsappButton.onclick = function(event) {
+
+            event.preventDefault();
+
+            sendCouponToWhatsApp();
+
+        };
+    }
+}
+
+
+// ============================================================
+// FORM SUBMISSION
 // ============================================================
 
 if (form) {
 
-    form.addEventListener("submit", async function (e) {
+    form.addEventListener("submit", async function(e) {
 
         e.preventDefault();
+
+        // ----------------------------------------------------
+        // GET BASIC DETAILS
+        // ----------------------------------------------------
 
         const nameInput = getElement("name");
         const mobileInput = getElement("mobile");
@@ -49,9 +120,9 @@ if (form) {
             vehicleInput ? vehicleInput.value.trim() : "";
 
 
-        // --------------------------------------------------------
-        // MOBILE VALIDATION
-        // --------------------------------------------------------
+        // ----------------------------------------------------
+        // VALIDATE MOBILE
+        // ----------------------------------------------------
 
         if (!/^[6-9]\d{9}$/.test(mobile)) {
 
@@ -63,44 +134,31 @@ if (form) {
         }
 
 
-        // --------------------------------------------------------
-        // OPTIONAL FIELDS
-        // --------------------------------------------------------
+        // ----------------------------------------------------
+        // GET OPTIONAL FIELDS
+        // ----------------------------------------------------
 
         let interest = "";
         let dealership = "";
 
-        const allSelects =
-            form.querySelectorAll("select");
+        const technologySelect =
+            getElement("technology");
 
-        allSelects.forEach(function (select) {
+        const dealershipSelect =
+            getElement("dealership");
 
-            const label =
-                select.parentElement
-                    ? select.parentElement.innerText.toLowerCase()
-                    : "";
+        if (technologySelect) {
+            interest = technologySelect.value;
+        }
 
-            if (
-                label.includes("interest") ||
-                label.includes("technology")
-            ) {
-                interest = select.value;
-            }
-
-            if (
-                label.includes("dealership") ||
-                label.includes("₹1 lakh") ||
-                label.includes("1 lakh")
-            ) {
-                dealership = select.value;
-            }
-
-        });
+        if (dealershipSelect) {
+            dealership = dealershipSelect.value;
+        }
 
 
-        // --------------------------------------------------------
-        // SAVE CUSTOMER DETAILS FOR WHATSAPP
-        // --------------------------------------------------------
+        // ----------------------------------------------------
+        // SAVE CUSTOMER DETAILS
+        // ----------------------------------------------------
 
         customerMobile = mobile;
         customerName = name;
@@ -109,30 +167,9 @@ if (form) {
         customerDealership = dealership;
 
 
-        // --------------------------------------------------------
-        // PRIZES
-        // --------------------------------------------------------
-
-        const prizes = [
-
-            "FREE Tyre Fitting",
-
-            "FREE Tubeless Valve Worth ₹100",
-
-            "2% OFF Final Bill",
-
-            "50% OFF Tube MRP",
-
-            "50% OFF Puncture Kit MRP",
-
-            "₹100 OFF Two Wheeler Tyres",
-
-            "₹100 OFF Car Tyres",
-
-            "₹1000 OFF Super Bike Tyres"
-
-        ];
-
+        // ----------------------------------------------------
+        // GENERATE PRIZE
+        // ----------------------------------------------------
 
         const prize =
             prizes[
@@ -142,9 +179,9 @@ if (form) {
             ];
 
 
-        // --------------------------------------------------------
-        // COUPON
-        // --------------------------------------------------------
+        // ----------------------------------------------------
+        // GENERATE COUPON
+        // ----------------------------------------------------
 
         const coupon =
             "GT" +
@@ -153,9 +190,9 @@ if (form) {
                 .slice(-6);
 
 
-        // --------------------------------------------------------
-        // SEND TO GOOGLE SHEETS
-        // --------------------------------------------------------
+        // ----------------------------------------------------
+        // DATA FOR GOOGLE SHEETS
+        // ----------------------------------------------------
 
         const data = {
 
@@ -176,12 +213,12 @@ if (form) {
         };
 
 
-        // --------------------------------------------------------
-        // BUTTON
-        // --------------------------------------------------------
+        // ----------------------------------------------------
+        // DISABLE BUTTON
+        // ----------------------------------------------------
 
         const submitBtn =
-            form.querySelector("button");
+            getElement("claimButton");
 
         if (submitBtn) {
 
@@ -193,42 +230,87 @@ if (form) {
         }
 
 
+        // ====================================================
+        // SEND TO GOOGLE APPS SCRIPT
+        // ====================================================
+
+        let serverResponseReceived = false;
+
         try {
 
-            const response =
-                await fetch(
-                    GOOGLE_SCRIPT_URL,
-                    {
-                        method: "POST",
+            const response = await fetch(
+                GOOGLE_SCRIPT_URL,
+                {
+                    method: "POST",
 
-                        headers: {
-                            "Content-Type":
-                                "text/plain;charset=utf-8"
-                        },
+                    headers: {
+                        "Content-Type":
+                            "text/plain;charset=utf-8"
+                    },
 
-                        body:
-                            JSON.stringify(data)
-                    }
+                    body: JSON.stringify(data)
+                }
+            );
+
+
+            // ------------------------------------------------
+            // IMPORTANT:
+            // DO NOT USE response.json()
+            // ------------------------------------------------
+
+            let responseText = "";
+
+            try {
+
+                responseText =
+                    await response.text();
+
+            } catch (textError) {
+
+                console.log(
+                    "Response text unavailable:",
+                    textError
                 );
 
-
-            const result =
-                await response.json();
+            }
 
 
-            // ----------------------------------------------------
-            // DUPLICATE
-            // ----------------------------------------------------
+            // ------------------------------------------------
+            // TRY TO READ JSON SAFELY
+            // ------------------------------------------------
+
+            let result = null;
+
+            if (responseText) {
+
+                try {
+
+                    result =
+                        JSON.parse(responseText);
+
+                } catch (jsonError) {
+
+                    console.log(
+                        "Response was not JSON:",
+                        responseText
+                    );
+
+                }
+            }
+
+
+            // ------------------------------------------------
+            // DUPLICATE MOBILE
+            // ------------------------------------------------
 
             if (
-                result.status ===
-                "duplicate"
+                result &&
+                result.status === "duplicate"
             ) {
 
                 if (submitBtn) {
 
-                    submitBtn.disabled =
-                        false;
+                    submitBtn.disabled = false;
 
                     submitBtn.innerText =
                         "🎁 CLAIM MY COUPON";
@@ -243,162 +325,58 @@ if (form) {
             }
 
 
-            // ----------------------------------------------------
+            // ------------------------------------------------
             // SUCCESS
-            // ----------------------------------------------------
+            // ------------------------------------------------
 
-            if (
-                result.status ===
-                "success"
-            ) {
+            serverResponseReceived = true;
 
+            showCouponResult(
+                coupon,
+                prize
+            );
 
-                // -----------------------------------------------
-                // PUT COUPON ON RESULT PAGE
-                // -----------------------------------------------
-
-                const couponElement =
-                    getElement("couponCode");
-
-                if (couponElement) {
-
-                    couponElement.innerText =
-                        coupon;
-
-                }
-
-
-                // -----------------------------------------------
-                // PUT PRIZE ON RESULT PAGE
-                // -----------------------------------------------
-
-                const prizeElement =
-                    getElement("prizeWon");
-
-                if (prizeElement) {
-
-                    prizeElement.innerText =
-                        prize;
-
-                }
-
-
-                // -----------------------------------------------
-                // HIDE FORM PAGE
-                // -----------------------------------------------
-
-                const resultPage =
-                    getElement("resultPage");
-
-
-                // Try to find the form container
-                let formPage =
-                    getElement("formPage");
-
-
-                if (!formPage) {
-
-                    formPage =
-                        form.closest(
-                            ".container"
-                        );
-
-                }
-
-
-                if (
-                    formPage &&
-                    formPage !== resultPage
-                ) {
-
-                    formPage.style.display =
-                        "none";
-
-                }
-
-
-                // -----------------------------------------------
-                // SHOW RESULT PAGE
-                // -----------------------------------------------
-
-                if (resultPage) {
-
-                    resultPage.style.display =
-                        "block";
-
-                }
-
-
-                // -----------------------------------------------
-                // ALSO SUPPORT OLD MODAL VERSION
-                // -----------------------------------------------
-
-                const winnerModal =
-                    getElement("winnerModal");
-
-                if (winnerModal) {
-
-                    winnerModal.style.display =
-                        "flex";
-
-                }
-
-
-                // -----------------------------------------------
-                // RESET FORM
-                // -----------------------------------------------
-
-                form.reset();
-
-
-                if (submitBtn) {
-
-                    submitBtn.disabled =
-                        false;
-
-                    submitBtn.innerText =
-                        "🎁 CLAIM MY COUPON";
-
-                }
-
-
-                // -----------------------------------------------
-                // SCROLL TO RESULT
-                // -----------------------------------------------
-
-                if (resultPage) {
-
-                    resultPage.scrollIntoView({
-                        behavior: "smooth",
-                        block: "start"
-                    });
-
-                }
-
-            }
 
         } catch (error) {
 
             console.error(
-                "Google Apps Script error:",
+                "Google Apps Script request:",
                 error
             );
 
 
-            if (submitBtn) {
+            // =================================================
+            // IMPORTANT FALLBACK
+            // =================================================
+            //
+            // Google Apps Script can sometimes save the data
+            // successfully but the browser cannot read the
+            // redirected response because of cross-origin
+            // browser restrictions.
+            //
+            // Since your Sheet is already receiving the entry,
+            // show the coupon instead of leaving the customer
+            // stuck on "Processing".
+            // =================================================
 
-                submitBtn.disabled =
-                    false;
-
-                submitBtn.innerText =
-                    "🎁 CLAIM MY COUPON";
-
-            }
-
-
-            alert(
-                "Error saving data. Please try again."
+            showCouponResult(
+                coupon,
+                prize
             );
+
+        }
+
+
+        // ----------------------------------------------------
+        // RESTORE BUTTON
+        // ----------------------------------------------------
+
+        if (submitBtn) {
+
+            submitBtn.disabled = false;
+
+            submitBtn.innerText =
+                "🎁 CLAIM MY COUPON";
 
         }
 
@@ -413,10 +391,9 @@ if (form) {
 
 function sendCouponToWhatsApp() {
 
-
-    // ----------------------------------------------------------
-    // CUSTOMER NUMBER
-    // ----------------------------------------------------------
+    // --------------------------------------------------------
+    // CHECK CUSTOMER NUMBER
+    // --------------------------------------------------------
 
     if (
         !/^[6-9]\d{9}$/.test(
@@ -429,13 +406,12 @@ function sendCouponToWhatsApp() {
         );
 
         return;
-
     }
 
 
-    // ----------------------------------------------------------
-    // COUPON
-    // ----------------------------------------------------------
+    // --------------------------------------------------------
+    // GET COUPON AND OFFER
+    // --------------------------------------------------------
 
     const couponElement =
         getElement("couponCode");
@@ -443,12 +419,10 @@ function sendCouponToWhatsApp() {
     const prizeElement =
         getElement("prizeWon");
 
-
     const coupon =
         couponElement
             ? couponElement.innerText.trim()
             : "";
-
 
     const prize =
         prizeElement
@@ -463,13 +437,12 @@ function sendCouponToWhatsApp() {
         );
 
         return;
-
     }
 
 
-    // ----------------------------------------------------------
-    // MESSAGE
-    // ----------------------------------------------------------
+    // --------------------------------------------------------
+    // CUSTOMER WHATSAPP MESSAGE
+    // --------------------------------------------------------
 
     const message =
 `Welcome to GOWTHAM TYRES! 🚗
@@ -481,6 +454,7 @@ Your Coupon Code: ${coupon}
 Your Offer: ${prize}
 
 Gowtham Tyres - The Tyre Bazaar
+
 Simmakal, Madurai
 
 Location:
@@ -499,22 +473,22 @@ YouTube:
 https://youtube.com/@gowthamtyresindia
 
 Facebook:
-https://www.facebook.com/
+https://www.facebook.com/share/1BfZFw7s9X/?mibextid=wwXIfr
 
 Thank you for choosing GOWTHAM TYRES! 🙏`;
 
 
-    // ----------------------------------------------------------
+    // --------------------------------------------------------
     // CUSTOMER'S WHATSAPP NUMBER
-    // ----------------------------------------------------------
+    // --------------------------------------------------------
 
     const whatsappNumber =
         "91" + customerMobile;
 
 
-    // ----------------------------------------------------------
+    // --------------------------------------------------------
     // WHATSAPP URL
-    // ----------------------------------------------------------
+    // --------------------------------------------------------
 
     const whatsappURL =
         "https://wa.me/" +
@@ -523,20 +497,18 @@ Thank you for choosing GOWTHAM TYRES! 🙏`;
         encodeURIComponent(message);
 
 
-    // ----------------------------------------------------------
-    // OPEN
-    // ----------------------------------------------------------
+    // --------------------------------------------------------
+    // OPEN CUSTOMER'S WHATSAPP
+    // --------------------------------------------------------
 
-    window.open(
-        whatsappURL,
-        "_blank"
-    );
+    window.location.href =
+        whatsappURL;
 
 }
 
 
 // ============================================================
-// CLOSE WINNER
+// CLOSE OLD WINNER MODAL IF PRESENT
 // ============================================================
 
 function closeWinner() {
@@ -563,3 +535,33 @@ window.sendCouponToWhatsApp =
 
 window.closeWinner =
     closeWinner;
+
+
+// ============================================================
+// INITIAL WHATSAPP BUTTON SETUP
+// ============================================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        const whatsappButton =
+            getElement("whatsappButton");
+
+        if (whatsappButton) {
+
+            whatsappButton.addEventListener(
+                "click",
+                function(event) {
+
+                    event.preventDefault();
+
+                    sendCouponToWhatsApp();
+
+                }
+            );
+
+        }
+
+    }
+);
