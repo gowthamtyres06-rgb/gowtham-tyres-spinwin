@@ -3,122 +3,275 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gowtham Tyres | Guaranteed Coupon</title>
+
+    <title>Gowtham Tyres | Claim My Coupon</title>
 
     <link rel="stylesheet" href="style.css">
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
 </head>
-<div id="winnerModal" class="winner-modal">
-
-  <div class="winner-card">
-
-    <h2>🎉 Congratulations!</h2>
-
-    <p>Your Coupon Code</p>
-
-    <h1 id="couponCode"></h1>
-
-    <p>Prize Won</p>
-
-    <h3 id="prizeWon"></h3>
-
-    <a href="https://maps.app.goo.gl/nkh5RK8eHdoE58QHA"
-       target="_blank"
-       class="action-btn">
-       📍 Get Directions
-    </a>
-
-    <a href="https://wa.me/917305563422"
-       target="_blank"
-       class="action-btn">
-       💬 WhatsApp Us
-    </a>
-<a href="https://maps.app.goo.gl/Yc77S1uy9PmqJLVN8?g_st=ipc"
-   target="_blank"
-   class="action-btn">
-   ⭐ Leave Google Review
-</a><a href="https://instagram.com/YOUR_INSTAGRAM_USERNAME"
-   target="_blank"
-   class="insta-btn">
-   📸 Follow Gowtham Tyres on Instagram
-</a>
-
-<a href="https://youtube.com/@YOUR_YOUTUBE_CHANNEL"
-   target="_blank"
-   class="yt-btn">
-   ▶️ Subscribe to Gowtham Tyre Tech
-</a>
-    <button onclick="closeWinner()"
-            class="close-btn">
-        Close
-    </button>
-
-  </div>
-
-</div>
 
 <body>
 
-<div class="container">
+<div class="page">
 
-    <img src="logo.png" class="logo" alt="Gowtham Tyres">
+    <!-- =========================
+         CLAIM PAGE
+    ========================== -->
 
-    <h1>GOWTHAM TYRES</h1>
+    <main class="container" id="claimPage">
 
-    <h3>The Tyre Bazaar</h3>
+        <img
+            src="assets/images/logo.png"
+            class="logo"
+            alt="Gowtham Tyres"
+        >
 
-    <div class="review-box">
+        <div class="event-badge">
+            ADHIRAI ALAIKKIRAL
+        </div>
 
-        ⭐⭐⭐⭐⭐
+        <h1>GOWTHAM TYRES</h1>
 
-        <h2>2000+ Google Reviews</h2>
+        <h2>CLAIM MY COUPON</h2>
 
-        <p>Trusted by Thousands of Happy Customers</p>
+        <div class="welcome-box">
+            🎁 <strong>Every Visitor Gets an Offer!</strong>
+            <span>Fill in your details to claim your coupon.</span>
+        </div>
 
-    </div>
+        <form id="leadForm">
 
-    <div class="offer-box">
+            <label for="name">Your Name</label>
 
-        🎉 BNI GRAND OFFER 🎉
+            <input
+                type="text"
+                id="name"
+                placeholder="Enter your name"
+                autocomplete="name"
+                required
+            >
 
-        <br><br>
+            <label for="mobile">Mobile Number</label>
 
-        Every Visitor Wins a Guaranteed Offer
+            <input
+                type="tel"
+                id="mobile"
+                maxlength="10"
+                inputmode="numeric"
+                pattern="[6-9]{1}[0-9]{9}"
+                placeholder="Enter 10-digit mobile number"
+                autocomplete="tel"
+                required
+            >
 
-    </div>
+            <label for="vehicle">Vehicle / Model</label>
 
-    <form id="leadForm">
+            <input
+                type="text"
+                id="vehicle"
+                placeholder="Eg: Creta / BMW / Thar"
+                required
+            >
 
-        <input type="text"
-        placeholder="Your Name"
-        id="name"
-        required>
+            <label for="technology">
+                Area of Interest / Tyre Technology
+                <span class="optional">(Optional)</span>
+            </label>
 
-        <input type="tel"
-placeholder="Mobile Number"
-id="mobile"
-maxlength="10"
-pattern="[6-9]{1}[0-9]{9}"
-required>
+            <select id="technology">
 
-        <input type="text"
-        placeholder="Vehicle Name"
-        id="vehicle"
-        required>
-        <p style="font-size:12px;color:gray;text-align:center;">
-One coupon per mobile number.
-</p>
-        <button type="submit">
+                <option value="">Select your interest</option>
 
-            🎡 CLAIM MY COUPON
+                <option>Calm Tyre Technology</option>
+                <option>1 Lakh Kilometer Running Tyre</option>
+                <option>JK Smart Sensor – James Bond Tyre</option>
+                <option>Dutch Vredestein SuperSport Tyre</option>
+                <option>Continental Tyres</option>
+                <option>Michelin Tyres</option>
+                <option>Economic Offer Tyres – Car & Bike</option>
+                <option>Eagle F1 RaceTrack Tyres</option>
+                <option>Pirelli Run Flat Tyres (RFT)</option>
+                <option>Apollo Tyres</option>
+                <option>Superbike Tyres</option>
+                <option>Puncture Sealing Technique</option>
+                <option>Off-Road Tyres</option>
+                <option>Special Alloys</option>
+                <option>Steel Rims</option>
+                <option>Spacers</option>
 
-        </button>
+            </select>
 
-    </form>
+            <label for="dealership">
+                OWNER IN JUST ₹1 LAKH – DEALERSHIP?
+                <span class="optional">(Optional)</span>
+            </label>
+
+            <select id="dealership">
+
+                <option value="">Select</option>
+                <option value="YES">YES</option>
+                <option value="NO">NO</option>
+
+            </select>
+
+            <p class="coupon-note">
+                One coupon per mobile number.
+            </p>
+
+            <button
+                type="submit"
+                id="claimButton"
+                class="claim-button"
+            >
+                🎁 CLAIM MY COUPON
+            </button>
+
+        </form>
+
+    </main>
+
+
+    <!-- =========================
+         COUPON RESULT PAGE
+    ========================== -->
+
+    <main class="container result-page" id="resultPage">
+
+        <div class="success-icon">🎉</div>
+
+        <div class="event-badge">
+            WELCOME TO GOWTHAM TYRES
+        </div>
+
+        <h1>CONGRATULATIONS!</h1>
+
+        <p class="result-message">
+            Your Gowtham Tyres coupon is ready.
+        </p>
+
+        <div class="coupon-card">
+
+            <div class="coupon-label">
+                YOUR COUPON CODE
+            </div>
+
+            <div id="couponCode"></div>
+
+            <div class="offer-label">
+                YOUR OFFER
+            </div>
+
+            <div id="prizeWon"></div>
+
+            <div class="validity">
+                Valid until <strong>31 December 2026</strong>
+            </div>
+
+        </div>
+
+
+        <!-- MOST IMPORTANT BUTTON -->
+
+        <a
+            href="#"
+            id="whatsappButton"
+            class="whatsapp-button"
+            target="_blank"
+            rel="noopener"
+        >
+            <span>💬</span>
+            <strong>SEND COUPON TO WHATSAPP</strong>
+        </a>
+
+        <p class="whatsapp-note">
+            Your coupon message is ready. Just tap <strong>Send</strong> in WhatsApp.
+        </p>
+
+
+        <!-- CALL -->
+
+        <a
+            href="tel:+919677841063"
+            class="action-button call-button"
+        >
+            📞 CALL GOWTHAM TYRES
+        </a>
+
+
+        <!-- LOCATION -->
+
+        <a
+            href="https://maps.app.goo.gl/m8zWTLQjn55cpSt28?g_st=ic"
+            target="_blank"
+            rel="noopener"
+            class="action-button location-button"
+        >
+            📍 GET DIRECTIONS
+        </a>
+
+
+        <!-- SOCIAL / REVIEW -->
+
+        <div class="social-grid">
+
+            <a
+                href="https://www.instagram.com/gowthamtyres/"
+                target="_blank"
+                rel="noopener"
+                class="social-button instagram"
+            >
+                📸 Instagram
+            </a>
+
+            <a
+                href="https://youtube.com/@gowthamtyresindia"
+                target="_blank"
+                rel="noopener"
+                class="social-button youtube"
+            >
+                ▶️ YouTube
+            </a>
+
+            <a
+                href="https://www.facebook.com/share/1BfZFw7s9X/?mibextid=wwXIfr"
+                target="_blank"
+                rel="noopener"
+                class="social-button facebook"
+            >
+                👍 Facebook
+            </a>
+
+            <a
+                href="https://g.page/r/Cc2q3TaTK5Q6EAE/review"
+                target="_blank"
+                rel="noopener"
+                class="social-button review"
+            >
+                ⭐ Google Review
+            </a>
+
+        </div>
+
+
+        <div class="contact-footer">
+
+            <strong>GOWTHAM TYRES – The Tyre Bazaar</strong>
+
+            <br>
+
+            📞 96778 41063
+
+        </div>
+
+    </main>
 
 </div>
 
 <script src="script.js"></script>
+
 </body>
 </html>
