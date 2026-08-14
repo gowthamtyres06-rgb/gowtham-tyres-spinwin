@@ -8,24 +8,11 @@ const GOOGLE_SCRIPT_URL =
 
 const form = document.getElementById("leadForm");
 
-// ============================================================
-// CUSTOMER DETAILS
-// ============================================================
-
 let customerMobile = "";
 let customerName = "";
 let customerVehicle = "";
 let customerInterest = "";
 let customerDealership = "";
-
-
-// ============================================================
-// SAFE ELEMENT FINDER
-// ============================================================
-
-function getElement(id) {
-    return document.getElementById(id);
-}
 
 
 // ============================================================
@@ -45,7 +32,16 @@ const prizes = [
 
 
 // ============================================================
-// SHOW COUPON RESULT
+// ELEMENT HELPER
+// ============================================================
+
+function getElement(id) {
+    return document.getElementById(id);
+}
+
+
+// ============================================================
+// SHOW COUPON PAGE
 // ============================================================
 
 function showCouponResult(coupon, prize) {
@@ -70,24 +66,11 @@ function showCouponResult(coupon, prize) {
 
     if (resultPage) {
         resultPage.style.display = "block";
+
         resultPage.scrollIntoView({
             behavior: "smooth",
             block: "start"
         });
-    }
-
-    // Make sure WhatsApp button works
-    const whatsappButton = getElement("whatsappButton");
-
-    if (whatsappButton) {
-
-        whatsappButton.onclick = function(event) {
-
-            event.preventDefault();
-
-            sendCouponToWhatsApp();
-
-        };
     }
 }
 
@@ -98,13 +81,9 @@ function showCouponResult(coupon, prize) {
 
 if (form) {
 
-    form.addEventListener("submit", async function(e) {
+    form.addEventListener("submit", async function (e) {
 
         e.preventDefault();
-
-        // ----------------------------------------------------
-        // GET BASIC DETAILS
-        // ----------------------------------------------------
 
         const nameInput = getElement("name");
         const mobileInput = getElement("mobile");
@@ -121,7 +100,7 @@ if (form) {
 
 
         // ----------------------------------------------------
-        // VALIDATE MOBILE
+        // MOBILE VALIDATION
         // ----------------------------------------------------
 
         if (!/^[6-9]\d{9}$/.test(mobile)) {
@@ -135,7 +114,7 @@ if (form) {
 
 
         // ----------------------------------------------------
-        // GET OPTIONAL FIELDS
+        // OPTIONAL FIELDS
         // ----------------------------------------------------
 
         let interest = "";
@@ -157,7 +136,7 @@ if (form) {
 
 
         // ----------------------------------------------------
-        // SAVE CUSTOMER DETAILS
+        // SAVE CUSTOMER DETAILS FOR WHATSAPP
         // ----------------------------------------------------
 
         customerMobile = mobile;
@@ -168,7 +147,7 @@ if (form) {
 
 
         // ----------------------------------------------------
-        // GENERATE PRIZE
+        // GENERATE OFFER
         // ----------------------------------------------------
 
         const prize =
@@ -191,30 +170,24 @@ if (form) {
 
 
         // ----------------------------------------------------
-        // DATA FOR GOOGLE SHEETS
+        // DATA FOR GOOGLE SHEET
         // ----------------------------------------------------
 
         const data = {
 
             name: name,
-
             mobile: mobile,
-
             vehicle: vehicle,
-
             interest: interest,
-
             dealership: dealership,
-
             prize: prize,
-
             coupon: coupon
 
         };
 
 
         // ----------------------------------------------------
-        // DISABLE BUTTON
+        // BUTTON PROCESSING
         // ----------------------------------------------------
 
         const submitBtn =
@@ -223,9 +196,7 @@ if (form) {
         if (submitBtn) {
 
             submitBtn.disabled = true;
-
-            submitBtn.innerText =
-                "Processing...";
+            submitBtn.innerText = "Processing...";
 
         }
 
@@ -233,8 +204,6 @@ if (form) {
         // ====================================================
         // SEND TO GOOGLE APPS SCRIPT
         // ====================================================
-
-        let serverResponseReceived = false;
 
         try {
 
@@ -254,8 +223,8 @@ if (form) {
 
 
             // ------------------------------------------------
-            // IMPORTANT:
-            // DO NOT USE response.json()
+            // READ RESPONSE AS TEXT
+            // NOT response.json()
             // ------------------------------------------------
 
             let responseText = "";
@@ -265,71 +234,62 @@ if (form) {
                 responseText =
                     await response.text();
 
-            } catch (textError) {
+            } catch (error) {
 
                 console.log(
-                    "Response text unavailable:",
-                    textError
+                    "Could not read Apps Script response:",
+                    error
                 );
 
             }
 
 
             // ------------------------------------------------
-            // TRY TO READ JSON SAFELY
+            // CHECK FOR DUPLICATE
             // ------------------------------------------------
-
-            let result = null;
 
             if (responseText) {
 
                 try {
 
-                    result =
+                    const result =
                         JSON.parse(responseText);
 
-                } catch (jsonError) {
+                    if (
+                        result &&
+                        result.status === "duplicate"
+                    ) {
+
+                        if (submitBtn) {
+
+                            submitBtn.disabled = false;
+
+                            submitBtn.innerText =
+                                "🎁 CLAIM MY COUPON";
+
+                        }
+
+                        alert(
+                            "This mobile number has already claimed a coupon."
+                        );
+
+                        return;
+                    }
+
+                } catch (error) {
 
                     console.log(
-                        "Response was not JSON:",
-                        responseText
+                        "Apps Script returned non-JSON response."
                     );
 
                 }
+
             }
 
 
             // ------------------------------------------------
-            // DUPLICATE MOBILE
+            // SHOW RESULT
             // ------------------------------------------------
-
-            if (
-                result &&
-                result.status === "duplicate"
-            ) {
-
-                if (submitBtn) {
-
-                    submitBtn.disabled = false;
-
-                    submitBtn.innerText =
-                        "🎁 CLAIM MY COUPON";
-
-                }
-
-                alert(
-                    "This mobile number has already claimed a coupon."
-                );
-
-                return;
-            }
-
-
-            // ------------------------------------------------
-            // SUCCESS
-            // ------------------------------------------------
-
-            serverResponseReceived = true;
 
             showCouponResult(
                 coupon,
@@ -340,24 +300,14 @@ if (form) {
         } catch (error) {
 
             console.error(
-                "Google Apps Script request:",
+                "Apps Script request error:",
                 error
             );
 
 
-            // =================================================
-            // IMPORTANT FALLBACK
-            // =================================================
-            //
-            // Google Apps Script can sometimes save the data
-            // successfully but the browser cannot read the
-            // redirected response because of cross-origin
-            // browser restrictions.
-            //
-            // Since your Sheet is already receiving the entry,
-            // show the coupon instead of leaving the customer
-            // stuck on "Processing".
-            // =================================================
+            // ------------------------------------------------
+            // FALLBACK
+            // ------------------------------------------------
 
             showCouponResult(
                 coupon,
@@ -386,13 +336,13 @@ if (form) {
 
 
 // ============================================================
-// WHATSAPP
+// SEND COUPON TO CUSTOMER'S WHATSAPP
 // ============================================================
 
 function sendCouponToWhatsApp() {
 
     // --------------------------------------------------------
-    // CHECK CUSTOMER NUMBER
+    // CHECK CUSTOMER MOBILE
     // --------------------------------------------------------
 
     if (
@@ -410,7 +360,7 @@ function sendCouponToWhatsApp() {
 
 
     // --------------------------------------------------------
-    // GET COUPON AND OFFER
+    // GET COUPON
     // --------------------------------------------------------
 
     const couponElement =
@@ -440,9 +390,9 @@ function sendCouponToWhatsApp() {
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // CUSTOMER WHATSAPP MESSAGE
-    // --------------------------------------------------------
+    // ========================================================
 
     const message =
 `Welcome to GOWTHAM TYRES! 🚗
@@ -478,17 +428,17 @@ https://www.facebook.com/share/1BfZFw7s9X/?mibextid=wwXIfr
 Thank you for choosing GOWTHAM TYRES! 🙏`;
 
 
-    // --------------------------------------------------------
-    // CUSTOMER'S WHATSAPP NUMBER
-    // --------------------------------------------------------
+    // ========================================================
+    // CUSTOMER'S NUMBER
+    // ========================================================
 
     const whatsappNumber =
         "91" + customerMobile;
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // WHATSAPP URL
-    // --------------------------------------------------------
+    // ========================================================
 
     const whatsappURL =
         "https://wa.me/" +
@@ -497,9 +447,9 @@ Thank you for choosing GOWTHAM TYRES! 🙏`;
         encodeURIComponent(message);
 
 
-    // --------------------------------------------------------
-    // OPEN CUSTOMER'S WHATSAPP
-    // --------------------------------------------------------
+    // ========================================================
+    // OPEN CUSTOMER WHATSAPP
+    // ========================================================
 
     window.location.href =
         whatsappURL;
@@ -508,42 +458,12 @@ Thank you for choosing GOWTHAM TYRES! 🙏`;
 
 
 // ============================================================
-// CLOSE OLD WINNER MODAL IF PRESENT
-// ============================================================
-
-function closeWinner() {
-
-    const winnerModal =
-        getElement("winnerModal");
-
-    if (winnerModal) {
-
-        winnerModal.style.display =
-            "none";
-
-    }
-
-}
-
-
-// ============================================================
-// MAKE FUNCTIONS AVAILABLE TO HTML
-// ============================================================
-
-window.sendCouponToWhatsApp =
-    sendCouponToWhatsApp;
-
-window.closeWinner =
-    closeWinner;
-
-
-// ============================================================
-// INITIAL WHATSAPP BUTTON SETUP
+// WHATSAPP BUTTON
 // ============================================================
 
 document.addEventListener(
     "DOMContentLoaded",
-    function() {
+    function () {
 
         const whatsappButton =
             getElement("whatsappButton");
@@ -552,7 +472,7 @@ document.addEventListener(
 
             whatsappButton.addEventListener(
                 "click",
-                function(event) {
+                function (event) {
 
                     event.preventDefault();
 
@@ -565,3 +485,11 @@ document.addEventListener(
 
     }
 );
+
+
+// ============================================================
+// MAKE WHATSAPP FUNCTION AVAILABLE TO HTML
+// ============================================================
+
+window.sendCouponToWhatsApp =
+    sendCouponToWhatsApp;
